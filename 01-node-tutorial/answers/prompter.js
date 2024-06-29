@@ -1,5 +1,5 @@
 const http = require("http");
-var StringDecoder = require("string_decoder").StringDecoder;
+const StringDecoder = require("string_decoder").StringDecoder;
 
 const getBody = (req, callback) => {
   const decode = new StringDecoder("utf-8");
@@ -20,17 +20,16 @@ const getBody = (req, callback) => {
   });
 };
 
-// here, you could declare one or more variables to store what comes back from the form.
-let item = "Enter something below.";
+// Initialize the random number and message
+let randomNumber = Math.floor(Math.random() * 100) + 1;
+let message = "Guess a number between 1 and 100.";
 
-// here, you can change the form below to modify the input fields and what is displayed.
-// This is just ordinary html with string interpolation.
 const form = () => {
   return `
   <body>
-  <p>${item}</p>
+  <p>${message}</p>
   <form method="POST">
-  <input name="item"></input>
+  <input name="guess" type="number" min="1" max="100"></input>
   <button type="submit">Submit</button>
   </form>
   </body>
@@ -43,13 +42,19 @@ const server = http.createServer((req, res) => {
   if (req.method === "POST") {
     getBody(req, (body) => {
       console.log("The body of the post is ", body);
-      // here, you can add your own logic
-      if (body["item"]) {
-        item = body["item"];
+      if (body["guess"]) {
+        const userGuess = parseInt(body["guess"], 10);
+        if (userGuess < randomNumber) {
+          message = "Your guess is too low. Try again!";
+        } else if (userGuess > randomNumber) {
+          message = "Your guess is too high. Try again!";
+        } else {
+          message = `Congratulations! You guessed the correct number ${randomNumber}. A new game has started.`;
+          randomNumber = Math.floor(Math.random() * 100) + 1;
+        }
       } else {
-        item = "Nothing was entered.";
+        message = "Please enter a number.";
       }
-      // Your code changes would end here
       res.writeHead(303, {
         Location: "/",
       });
