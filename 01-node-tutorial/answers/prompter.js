@@ -1,5 +1,5 @@
 const http = require("http");
-const StringDecoder = require("string_decoder").StringDecoder;
+var StringDecoder = require("string_decoder").StringDecoder;
 
 const getBody = (req, callback) => {
   const decode = new StringDecoder("utf-8");
@@ -20,16 +20,14 @@ const getBody = (req, callback) => {
   });
 };
 
-// Initialize the random number and message
-let randomNumber = Math.floor(Math.random() * 100) + 1;
-let message = "Guess a number between 1 and 100.";
+let item = "Enter something below.";
 
 const form = () => {
   return `
   <body>
-  <p>${message}</p>
+  <p>${item}</p>
   <form method="POST">
-  <input name="guess" type="number" min="1" max="100"></input>
+  <input name="item"></input>
   <button type="submit">Submit</button>
   </form>
   </body>
@@ -42,18 +40,10 @@ const server = http.createServer((req, res) => {
   if (req.method === "POST") {
     getBody(req, (body) => {
       console.log("The body of the post is ", body);
-      if (body["guess"]) {
-        const userGuess = parseInt(body["guess"], 10);
-        if (userGuess < randomNumber) {
-          message = "Your guess is too low. Try again!";
-        } else if (userGuess > randomNumber) {
-          message = "Your guess is too high. Try again!";
-        } else {
-          message = `Congratulations! You guessed the correct number ${randomNumber}. A new game has started.`;
-          randomNumber = Math.floor(Math.random() * 100) + 1;
-        }
+      if (body["item"]) {
+        item = body["item"];
       } else {
-        message = "Please enter a number.";
+        item = "Nothing was entered.";
       }
       res.writeHead(303, {
         Location: "/",
@@ -63,6 +53,10 @@ const server = http.createServer((req, res) => {
   } else {
     res.end(form());
   }
+});
+
+server.on("request", (req) => {
+  console.log("event received: ", req.method, req.url);
 });
 
 server.listen(3000);
