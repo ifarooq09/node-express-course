@@ -5,12 +5,18 @@ const app = express();
 const port = 3000;
 const tasks = require('./routes/taskRoutes');
 const connectDB = require('./db/conn.js');
+const notFounnd = require('./middleware/not-found.js')
+const errorHandlerMiddlware = require('./middleware/error-handler.js')
 
 // middleware
+app.use(express.static('./public')) 
 app.use(express.json());
 
 // routes
 app.use('/api/v1/tasks', tasks);
+
+app.use(notFounnd)
+app.use(errorHandlerMiddlware)
 
 // Start the server and connect to the database
 app.listen(port, async () => {
