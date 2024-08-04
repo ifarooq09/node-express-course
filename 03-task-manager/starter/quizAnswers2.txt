@@ -1,0 +1,59 @@
+Question 1:
+n this lesson, you created a middleware function called asyncWrapper. Why?
+
+Answer:
+The purpose of creating an asyncWrapper middleware function is to handle errors in asynchronous functions cleanly without having to use try-catch blocks in every route handler. It ensures that any errors thrown in an asynchronous function are properly passed to the Express error handling middleware.
+
+Question 2:
+Suppose that you want to make sure that both a status code and an error message are sent back to the user when they request the URL for a task that does not exist. Assume that you’ve created a CustomAPIError class and an error handler that references that class. Complete the code:
+
+const getTask = asyncWrapper(async (req, res, next) => {  
+  const { id: taskID } = req.params;  
+  const task = await Task.findOne({ _id: taskID });  
+  if (!task) {  
+    // your code here  
+  }  
+  res.status(200).json({ task });  
+});
+
+Answer: 
+
+Here's the code completed to ensure that both a status code and an error message are sent back to the user when they request the URL for a task that does not exist:
+
+const getTask = asyncWrapper (async (req, res) => {
+        const { id: taskID } = req.params;
+        const task = await Task.findOne({ _id: taskID });
+        if (!task) {
+            return next(createCustomError(`No task with id: ${taskID}`, 400))
+        }
+        res.status(200).json({ task });
+
+});
+
+
+Also below is the code for customeAPIError class and error handler
+
+class CustomAPIError extends Error {
+    constructor(message, statusCode) {
+        super(message)
+        this.statusCode = statusCode
+    }
+}
+
+const createCustomError = (messgae, statusCode) => {
+    return new CustomAPIError(messgae, statusCode)
+}
+
+module.exports = { createCustomError, CustomAPIError }
+
+Error Handler
+const {CustomAPIError} = require('../errors/custom-error.js')
+
+const errorHandlerMiddlware = (err, req, res, next) => {
+    if (err instanceof CustomAPIError) {
+        return res.status(err.statusCode).json({ msg: err.message})
+    }
+    return res.status(500).json({ msg: "Something went wrong, try agian later" })
+}
+
+module.exports = errorHandlerMiddlware
